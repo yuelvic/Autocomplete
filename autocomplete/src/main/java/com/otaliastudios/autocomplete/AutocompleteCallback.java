@@ -1,6 +1,7 @@
 package com.otaliastudios.autocomplete;
 
 import android.text.Editable;
+import android.text.Spannable;
 
 /**
  * Optional callback to be passed to {@link Autocomplete.Builder}.
@@ -24,4 +25,9 @@ public interface AutocompleteCallback<T> {
      * @param shown true if the popup was just shown, false if it was just hidden
      */
     void onPopupVisibilityChanged(boolean shown);
+
+    /**
+     * Called when data is to be provided from service
+     */
+    void getDataFromService(CharSequence sp);
 }

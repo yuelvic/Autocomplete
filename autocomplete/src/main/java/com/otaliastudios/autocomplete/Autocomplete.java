@@ -16,6 +16,8 @@ import android.view.Gravity;
 import android.widget.EditText;
 import android.widget.PopupWindow;
 
+import java.util.List;
+
 
 /**
  * Entry point for adding Autocomplete behavior to a {@link EditText}.
@@ -52,6 +54,7 @@ public final class Autocomplete<T> implements TextWatcher, SpanWatcher {
         private AutocompleteCallback<T> callback;
         private Drawable backgroundDrawable;
         private float elevationDp = 6;
+        private boolean service = false;
 
         private Builder(EditText source) {
             this.source = source;
@@ -108,10 +111,21 @@ public final class Autocomplete<T> implements TextWatcher, SpanWatcher {
          * Sets elevation for the popup. Defaults to 6 dp.
          *
          * @param elevationDp popup elevation, in DP
-         * @return this for chaning.
+         * @return this for chaining.
          */
         public Builder<T> with(float elevationDp) {
             this.elevationDp = elevationDp;
+            return this;
+        }
+
+        /**
+         * Sets if API service will be used to get data.
+         *
+         * @param service service
+         * @return this for chaining.
+         */
+        public Builder<T> viaService(boolean service) {
+            this.service = service;
             return this;
         }
 
@@ -159,6 +173,7 @@ public final class Autocomplete<T> implements TextWatcher, SpanWatcher {
     private boolean block;
     private boolean disabled;
     private boolean openBefore;
+    private boolean service;
     private String lastQuery = "null";
 
     private Autocomplete(Builder<T> builder) {
@@ -166,6 +181,7 @@ public final class Autocomplete<T> implements TextWatcher, SpanWatcher {
         presenter = builder.presenter;
         callback = builder.callback;
         source = builder.source;
+        service = builder.service;
 
         // Set up popup
         popup = new AutocompletePopup(source.getContext());
@@ -334,7 +350,8 @@ public final class Autocomplete<T> implements TextWatcher, SpanWatcher {
             dismissPopup();
         } else if (isPopupShowing() || policy.shouldShowPopup(sp, cursor)) {
             // LOG.now("onTextChanged: updating with filter "+policy.getQuery(sp));
-            showPopup(policy.getQuery(sp));
+            if (!service) showPopup(policy.getQuery(sp)); // Show instant if not from network
+            else callback.getDataFromService(policy.getQuery(sp)); // Invoke to fetch data from network
         }
         block = b;
     }
@@ -358,7 +375,7 @@ public final class Autocomplete<T> implements TextWatcher, SpanWatcher {
             boolean b = block;
             block = true;
             if (!isPopupShowing() && policy.shouldShowPopup(text, nstart)) {
-                showPopup(policy.getQuery(text));
+                if (!service) showPopup(policy.getQuery(text));
             }
             block = b;
         }

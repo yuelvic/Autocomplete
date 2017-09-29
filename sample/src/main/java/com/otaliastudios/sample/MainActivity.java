@@ -4,9 +4,11 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.Spannable;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
 import android.view.View;
@@ -43,16 +45,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         EditText edit = (EditText) findViewById(R.id.single);
         float elevation = 6f;
         Drawable backgroundDrawable = new ColorDrawable(Color.WHITE);
-        AutocompletePresenter<User> presenter = new UserPresenter(this);
+        final UserPresenter presenter = new UserPresenter(this);
         AutocompleteCallback<User> callback = new AutocompleteCallback<User>() {
             @Override
             public boolean onPopupItemClicked(Editable editable, User item) {
-                editable.clear();
-                editable.append(item.getFullname());
+//                editable.clear();
+                editable.append(item.getFullname()).append(' ');
                 return true;
             }
 
             public void onPopupVisibilityChanged(boolean shown) {}
+
+            @Override
+            public void getDataFromService(CharSequence s) {
+                presenter.setUsers(User.USERS);
+                userAutocomplete.showPopup(s);
+            }
         };
 
         userAutocomplete = Autocomplete.<User>on(edit)
@@ -60,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .with(backgroundDrawable)
                 .with(presenter)
                 .with(callback)
+                .with(new CharPolicy('@'))
+                .viaService(true)
                 .build();
     }
 
@@ -86,6 +96,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return true;
             }
             public void onPopupVisibilityChanged(boolean shown) {}
+
+            @Override
+            public void getDataFromService(CharSequence c) {
+
+            }
         };
 
         mentionsAutocomplete = Autocomplete.<User>on(edit)
@@ -115,6 +130,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             public void onPopupVisibilityChanged(boolean shown) {}
+
+            @Override
+            public void getDataFromService(CharSequence s) {
+
+            }
         };
 
         maleFemaleAutocomplete = Autocomplete.<User>on(edit)

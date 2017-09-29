@@ -22,9 +22,14 @@ import java.util.List;
 public class UserPresenter extends RecyclerViewPresenter<User> {
 
     protected Adapter adapter;
+    private List<User> users;
 
     public UserPresenter(Context context) {
         super(context);
+    }
+
+    public void setUsers(List<User> users) {
+        this.users = users;
     }
 
     @Override
@@ -43,13 +48,13 @@ public class UserPresenter extends RecyclerViewPresenter<User> {
 
     @Override
     protected void onQuery(@Nullable CharSequence query) {
-        List<User> all = User.USERS;
+//        List<User> users = User.USERS;
         if (TextUtils.isEmpty(query)) {
-            adapter.setData(all);
+            adapter.setData(users);
         } else {
             query = query.toString().toLowerCase();
             List<User> list = new ArrayList<>();
-            for (User u : all) {
+            for (User u : users) {
                 if (u.getFullname().toLowerCase().contains(query) ||
                         u.getUsername().toLowerCase().contains(query)) {
                     list.add(u);
